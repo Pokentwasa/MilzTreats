@@ -338,46 +338,7 @@ button { font: inherit; background: none; border: none; cursor: pointer; color: 
 .learn__photo { max-width: var(--container); margin: 0 auto; aspect-ratio: 21/9; }
 
 /* ==========================================================================
-   05 — COURSE BREAKDOWN
-   ========================================================================== */
-.journey { padding: clamp(4.5rem, 9vw, 7rem) var(--gutter); background: var(--white); }
-.journey__head { max-width: 640px; margin: 0 auto clamp(3rem, 6vw, 4rem); text-align: center; }
-.journey__heading {
-  font-family: var(--font-display); font-weight: 500;
-  font-size: clamp(2.2rem, 5vw, 3.4rem); line-height: 1.12;
-}
-.journey__list { max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; }
-.journey-item {
-  background: var(--cream-soft); border-radius: var(--radius-md); padding: 0 1.75rem;
-}
-.journey-item__summary {
-  display: flex; align-items: center; gap: 1.25rem;
-  padding: 1.5rem 0; cursor: pointer; list-style: none;
-}
-.journey-item__summary::-webkit-details-marker { display: none; }
-.journey-item__num {
-  font-family: var(--font-display); font-style: italic; font-size: 1rem; color: var(--pink-deep); flex-shrink: 0; width: 2rem;
-}
-.journey-item__title {
-  font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(1.15rem, 2.4vw, 1.5rem); flex: 1; color: var(--ink);
-}
-.journey-item__plus {
-  position: relative; width: 22px; height: 22px; flex-shrink: 0;
-  border-radius: 50%; background: var(--white);
-}
-.journey-item__plus::before, .journey-item__plus::after {
-  content: ''; position: absolute; background: var(--pink-deep); top: 50%; left: 50%;
-  transform: translate(-50%, -50%); transition: transform var(--dur-fast) var(--ease), opacity var(--dur-fast);
-}
-.journey-item__plus::before { width: 45%; height: 1.5px; }
-.journey-item__plus::after { width: 1.5px; height: 45%; }
-.journey-item[open] .journey-item__plus::after { transform: translate(-50%, -50%) rotate(90deg); opacity: 0; }
-.journey-item__body { padding: 0 0 1.75rem calc(2rem + 1.25rem); }
-.journey-item__body p { color: var(--body-ink); max-width: 56ch; line-height: 1.7; }
-
-/* ==========================================================================
-   06 — WHY LEARN WITH MILZ
+   05 — WHY LEARN WITH MILZ
    ========================================================================== */
 .milz { padding: clamp(4.5rem, 9vw, 7rem) var(--gutter); background: var(--cream-soft); }
 .milz__grid {
@@ -397,7 +358,7 @@ button { font: inherit; background: none; border: none; cursor: pointer; color: 
 }
 
 /* ==========================================================================
-   07 — WHAT'S INCLUDED
+   06 — WHAT'S INCLUDED
    ========================================================================== */
 .included { padding: clamp(4.5rem, 9vw, 7rem) var(--gutter); background: var(--white); }
 .included__head { max-width: 640px; margin: 0 auto clamp(3rem, 6vw, 4rem); text-align: center; }
@@ -415,28 +376,6 @@ button { font: inherit; background: none; border: none; cursor: pointer; color: 
 .included__caption {
   margin-top: 1rem; text-align: center; font-family: var(--font-body); font-size: 0.78rem; font-weight: 600;
   letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-45);
-}
-
-/* ==========================================================================
-   08 — SHOWCASE
-   ========================================================================== */
-.showcase { padding: clamp(4.5rem, 9vw, 7rem) 0; background: var(--cream-soft); overflow: hidden; }
-.showcase__head { max-width: 640px; margin: 0 auto clamp(2.5rem, 6vw, 3.5rem); padding-inline: var(--gutter); text-align: center; }
-.showcase__heading {
-  font-family: var(--font-display); font-weight: 500;
-  font-size: clamp(2.2rem, 5vw, 3.4rem); line-height: 1.12;
-}
-.showcase__rail {
-  display: flex; gap: 1.25rem; overflow-x: auto; padding: 0 var(--gutter) 1rem;
-  scroll-snap-type: x proximity; scrollbar-width: thin;
-}
-.showcase__item {
-  flex: 0 0 clamp(240px, 32vw, 380px); aspect-ratio: 4/5; scroll-snap-align: start;
-  transition: transform var(--dur-mid) var(--ease);
-}
-.showcase__item:hover { transform: translateY(-6px); }
-.showcase__caption {
-  font-family: var(--font-display); font-style: italic; font-size: 1.05rem; color: var(--ink);
 }
 
 /* ==========================================================================

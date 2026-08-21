@@ -2,10 +2,11 @@
  * TREATS BY MILZ — SITE CONFIG
  * ------------------------------------------------------------------
  * Edit this file to change course details across the whole site.
- * The module list below drives BOTH:
- *   - Section 04 "WHAT YOU'LL LEARN" (short cards)
- *   - Section 05 "YOUR BAKING JOURNEY" (accordion, long copy)
- * so you only ever update a module in one place.
+ * The `modules` array drives the "WHAT YOU'LL LEARN" card grid
+ * (section 04) — edit a module here and it updates on the site.
+ * Each module's `long` field isn't currently used on the page (it
+ * was written for the course-breakdown accordion, which was removed
+ * as duplicate content) — kept here in case that section comes back.
  *
  * Everything here is placeholder copy — swap in the real course
  * details, price and links before launch.
