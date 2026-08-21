@@ -7,16 +7,14 @@
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <style>
-  .error-page { min-height: 100vh; background: var(--black); color: var(--white); display: flex; align-items: center; justify-content: center; padding: 2rem; text-align: center; }
+  .error-page { min-height: 100vh; background: var(--cream-soft); display: flex; align-items: center; justify-content: center; padding: 2rem; text-align: center; }
   .error-card { max-width: 480px; }
-  .error-card__eyebrow { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 1rem; }
-  .error-card__heading { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: clamp(2.4rem, 7vw, 3.6rem); line-height: 0.95; margin-bottom: 1rem; }
-  .error-card__body { color: rgba(255,255,255,0.65); margin-bottom: 2.25rem; line-height: 1.6; }
-  .error-card .btn--ghost { border-color: rgba(255,255,255,0.4); color: var(--white); }
-  .error-card .btn--ghost:hover { background: var(--white); color: var(--black); }
+  .error-card__eyebrow { font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--pink-deep); margin-bottom: 1rem; }
+  .error-card__heading { font-family: var(--font-display); font-weight: 500; font-size: clamp(2rem, 6vw, 2.8rem); line-height: 1.1; margin-bottom: 1rem; color: var(--ink); }
+  .error-card__body { color: var(--body-ink); margin-bottom: 2.25rem; line-height: 1.65; }
   .error-actions { display: flex; flex-direction: column; gap: 0.9rem; align-items: center; }
 </style>
 </head>
@@ -25,13 +23,13 @@
 <div class="error-page">
   <div class="error-card">
     <p class="error-card__eyebrow">Treats by Milz</p>
-    <h1 class="error-card__heading" id="errorHeading">Payment didn't<br>go through.</h1>
+    <h1 class="error-card__heading" id="errorHeading">Payment didn't <span class="accent">go through.</span></h1>
     <p class="error-card__body" id="errorBody">
       Your payment was cancelled or didn't complete, so nothing has been charged. You can try again whenever you're ready.
     </p>
     <div class="error-actions">
       <a href="/checkout.html" class="btn btn--primary"><span>Try Again</span></a>
-      <a href="/#pricing" class="btn btn--ghost"><span>Back to Treats by Milz</span></a>
+      <a href="/#pricing" class="text-link">Back to Treats by Milz</a>
     </div>
   </div>
 </div>
