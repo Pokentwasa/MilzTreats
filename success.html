@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You're In — Treats by Milz</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .success-page { min-height: 100vh; background: var(--cream); padding: clamp(4rem, 10vw, 7rem) 1.5rem; display: flex; align-items: center; justify-content: center; }
+  .success-card { max-width: 560px; width: 100%; text-align: center; }
+  .success-card__eyebrow { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-45); margin-bottom: 1rem; }
+  .success-card__heading { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: clamp(2.6rem, 8vw, 4rem); line-height: 0.95; margin-bottom: 0.75rem; }
+  .success-card__sub { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; margin-bottom: 2rem; }
+  .download-box { background: var(--white); border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; padding: clamp(1.75rem, 5vw, 2.5rem); margin-bottom: 2.5rem; }
+  .download-box__status { font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-45); margin-bottom: 1.25rem; min-height: 1.2em; }
+  .download-box.is-error .btn--primary { display: none; }
+  .steps { text-align: left; max-width: 380px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.9rem; }
+  .steps li { display: flex; gap: 0.9rem; align-items: flex-start; font-size: 0.98rem; }
+  .steps li span.num {
+    font-family: var(--font-mono); font-size: 0.75rem; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--pink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="success-page">
+  <div class="success-card">
+    <p class="success-card__eyebrow">Treats by Milz</p>
+    <h1 class="success-card__heading">You're in. ✨</h1>
+    <p class="success-card__sub">Your baking journey starts now.</p>
+
+    <div class="download-box" id="downloadBox">
+      <p class="download-box__status" id="downloadStatus">Confirming your payment…</p>
+      <a href="#" class="btn btn--primary btn--full" id="downloadBtn" style="display:none;">
+        <span>Download Your Course</span>
+        <svg viewBox="0 0 24 24" class="btn__arrow"><path d="M12 3v13M6 11l6 6 6-6M5 21h14" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+
+    <ol class="steps">
+      <li><span class="num">1</span> Download the course</li>
+      <li><span class="num">2</span> Unzip the folder</li>
+      <li><span class="num">3</span> Start with Lesson 01</li>
+      <li><span class="num">4</span> Bake along with Milz</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+  /**
+   * The ZIP is never linked directly in this HTML. This page asks the
+   * backend for a short-lived signed download URL, only after the
+   * order reference in the URL has been confirmed as PAID server-side.
+   *
+   * Ozow should redirect here with a reference query param, e.g.
+   *   /success.html?order=ORD-XXXXXXX
+   * That reference is looked up against Supabase — it is never trusted
+   * on its own; /api/download/verify re-checks payment status before
+   * issuing a signed URL.
+   */
+  (function () {
+    var status = document.getElementById("downloadStatus");
+    var box = document.getElementById("downloadBox");
+    var btn = document.getElementById("downloadBtn");
+
+    var params = new URLSearchParams(window.location.search);
+    var orderRef = params.get("order");
+
+    if (!orderRef) {
+      status.textContent = "We couldn't find your order reference. Check the email confirmation from your payment, or contact us if you paid but landed here without one.";
+      box.classList.add("is-error");
+      return;
+    }
+
+    fetch("/api/download/verify?order=" + encodeURIComponent(orderRef))
+      .then(function (res) {
+        if (!res.ok) throw new Error("verify failed: " + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        if (!data || !data.downloadUrl) throw new Error("no downloadUrl in response");
+        status.textContent = "Your download link is ready — it expires after a short window, so grab it now.";
+        btn.href = data.downloadUrl;
+        btn.style.display = "inline-flex";
+      })
+      .catch(function (err) {
+        console.error("[success] download verify failed:", err);
+        status.textContent = "We couldn't confirm your payment yet. If you were just charged, wait a moment and refresh — Ozow's confirmation can take a few seconds to arrive.";
+        box.classList.add("is-error");
+      });
+  })();
+</script>
+</body>
+</html>

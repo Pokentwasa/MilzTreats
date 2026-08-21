@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — Treats by Milz</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .state-page { min-height: 100vh; background: var(--pink); display: flex; align-items: center; justify-content: center; padding: 2rem; text-align: center; }
+  .state-card { max-width: 460px; }
+  .state-card__eyebrow { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.6; margin-bottom: 1rem; }
+  .state-card__heading { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: clamp(2.2rem, 6vw, 3.2rem); line-height: 0.95; margin-bottom: 1rem; }
+  .state-card__body { color: var(--ink-70); margin-bottom: 2rem; line-height: 1.6; }
+  .spinner { width: 34px; height: 34px; border: 3px solid rgba(0,0,0,0.15); border-top-color: var(--black); border-radius: 50%; margin: 0 auto 1.75rem; animation: spin-loader 0.8s linear infinite; }
+  @keyframes spin-loader { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+  .state-card.is-error { display: none; }
+  .state-card.is-error.is-active { display: block; }
+  .state-card.is-loading.is-hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="state-page">
+
+  <div class="state-card is-loading" id="loadingState">
+    <div class="spinner" role="status" aria-label="Preparing your order"></div>
+    <p class="state-card__eyebrow">Treats by Milz</p>
+    <h1 class="state-card__heading">Setting up<br>your order.</h1>
+    <p class="state-card__body">You'll be taken to Ozow to complete a secure payment. Don't close this tab.</p>
+  </div>
+
+  <div class="state-card is-error" id="errorState">
+    <p class="state-card__eyebrow">Treats by Milz</p>
+    <h1 class="state-card__heading">Something<br>didn't load.</h1>
+    <p class="state-card__body" id="errorMessage">We couldn't start your order just now. No payment was made — nothing has been charged.</p>
+    <button class="btn btn--primary" id="retryBtn"><span>Try Again</span></button>
+    <p style="margin-top:1.5rem;"><a href="/#pricing" style="font-family:var(--font-mono);font-size:0.8rem;text-decoration:underline;">← Back to Treats by Milz</a></p>
+  </div>
+
+</div>
+
+<script src="js/site-config.js"></script>
+<script>
+  /**
+   * Checkout flow:
+   * 1. POST /api/checkout/initiate to create a PENDING order in Supabase
+   *    and get back an Ozow hosted-payment URL (HashCheck included server-side).
+   * 2. Redirect the browser to that Ozow URL.
+   * 3. Ozow redirects back to /success.html or /error.html after payment,
+   *    and separately calls /api/checkout/webhook to confirm server-side —
+   *    the webhook is the source of truth, never the redirect alone.
+   *
+   * This page intentionally shows no payment form: Ozow's own hosted page
+   * collects banking details, this site never touches them.
+   */
+  (function () {
+    var loading = document.getElementById("loadingState");
+    var errorState = document.getElementById("errorState");
+    var retryBtn = document.getElementById("retryBtn");
+
+    function startCheckout() {
+      loading.classList.remove("is-hidden");
+      errorState.classList.remove("is-active");
+
+      var course = (window.SITE_CONFIG && window.SITE_CONFIG.course) || {};
+
+      fetch("/api/checkout/initiate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product: "digital-baking-course",
+          amount: course.price,
+        }),
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error("Order could not be created (" + res.status + ")");
+          return res.json();
+        })
+        .then(function (data) {
+          if (!data || !data.paymentUrl) throw new Error("No payment URL returned");
+          window.location.href = data.paymentUrl;
+        })
+        .catch(function (err) {
+          loading.classList.add("is-hidden");
+          errorState.classList.add("is-active");
+          console.error("[checkout] initiate failed:", err);
+        });
+    }
+
+    retryBtn.addEventListener("click", startCheckout);
+    startCheckout();
+  })();
+</script>
+</body>
+</html>

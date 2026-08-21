@@ -1,0 +1,9 @@
+{
+  "name": "treats-by-milz",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Treats by Milz — digital baking course landing page + Ozow/Supabase checkout backend",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4"
+  }
+}
