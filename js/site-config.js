@@ -73,11 +73,11 @@ window.SITE_CONFIG = {
     },
   ],
 
-  // TODO: replace with real socials + contact
+  // TODO: replace with real socials — email is real (from Terms doc), IG/TikTok still placeholders
   social: {
     instagram: "https://instagram.com/treatsbymilz",
     tiktok: "https://tiktok.com/@treatsbymilz",
-    email: "hello@treatsbymilz.co.za",
+    email: "milisatyhefu@gmail.com",
   },
 
   links: {
