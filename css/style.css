@@ -329,8 +329,6 @@ button { font: inherit; background: none; border: none; cursor: pointer; color: 
 }
 .learn-card__desc { color: var(--body-ink); font-size: 0.96rem; line-height: 1.6; }
 
-.learn__photo { max-width: var(--container); margin: 0 auto; aspect-ratio: 21/9; }
-
 /* ==========================================================================
    05 — WHY LEARN WITH MILZ
    ========================================================================== */
