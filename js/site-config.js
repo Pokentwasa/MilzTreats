@@ -23,7 +23,7 @@ window.SITE_CONFIG = {
   course: {
     name: "The Digital Baking Course",
     currency: "R",
-    price: 499,
+    price: 160,
     priceNote: "Once-off payment. Instant access after payment.",
     zipFileName: "treats-by-milz-course.zip",
   },
@@ -83,6 +83,5 @@ window.SITE_CONFIG = {
 
   links: {
     terms: "/terms.html",
-    privacy: "/privacy.html",
   },
 };
