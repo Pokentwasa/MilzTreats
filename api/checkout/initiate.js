@@ -18,7 +18,7 @@ const crypto = require("crypto");
 
 // TODO keep this in sync with js/site-config.js course.price, or better,
 // move both to read from a single shared source (e.g. a Supabase `products` row)
-const COURSE_PRICE = 499.0;
+const COURSE_PRICE = 160.0;
 const SITE_URL = process.env.SITE_URL || "https://treatsbymilz.co.za";
 
 module.exports = async function handler(req, res) {
