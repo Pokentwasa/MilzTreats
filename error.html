@@ -35,15 +35,18 @@
 </div>
 
 <script>
-  // Ozow can redirect here with a status hint, e.g. /error.html?reason=cancelled
+  // checkout.html sends PayFast's cancel_url here as ?reason=cancelled — PayFast
+  // has no separate failure redirect, so a real failed payment lands here too.
+  // ?reason=failed is kept in case a future check (e.g. querying order status)
+  // can tell the two apart.
   (function () {
     var params = new URLSearchParams(window.location.search);
     var reason = params.get("reason");
     var body = document.getElementById("errorBody");
     if (reason === "cancelled") {
-      body.textContent = "You cancelled the payment before it completed, so nothing has been charged. You can try again whenever you're ready.";
+      body.textContent = "Your payment was cancelled or didn't complete, so nothing has been charged. You can try again whenever you're ready.";
     } else if (reason === "failed") {
-      body.textContent = "Ozow couldn't complete this payment. Nothing has been charged — please try again, or use a different account.";
+      body.textContent = "PayFast couldn't complete this payment. Nothing has been charged — please try again, or use a different payment method.";
     }
   })();
 </script>

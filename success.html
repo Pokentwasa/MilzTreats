@@ -57,7 +57,7 @@
    * backend for a short-lived signed download URL, only after the
    * order reference in the URL has been confirmed as PAID server-side.
    *
-   * Ozow should redirect here with a reference query param, e.g.
+   * PayFast should redirect here with a reference query param, e.g.
    *   /success.html?order=ORD-XXXXXXX
    * That reference is looked up against Supabase — it is never trusted
    * on its own; /api/download/verify re-checks payment status before
@@ -90,7 +90,7 @@
       })
       .catch(function (err) {
         console.error("[success] download verify failed:", err);
-        status.textContent = "We couldn't confirm your payment yet. If you were just charged, wait a moment and refresh — Ozow's confirmation can take a few seconds to arrive.";
+        status.textContent = "We couldn't confirm your payment yet. If you were just charged, wait a moment and refresh — PayFast's confirmation can take a few seconds to arrive.";
         box.classList.add("is-error");
       });
   })();

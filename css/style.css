@@ -396,7 +396,7 @@ button { font: inherit; background: none; border: none; cursor: pointer; color: 
 .pricing__checklist { display: flex; flex-direction: column; gap: 0.85rem; text-align: left; margin-bottom: 2rem; }
 .pricing__checklist li { display: flex; align-items: center; gap: 0.75rem; font-size: 0.98rem; color: var(--ink); }
 .pricing__card .btn--primary { margin-bottom: 1.1rem; }
-.pricing__ozow { display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.78rem; color: var(--ink-45); }
+.pricing__provider { display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.78rem; color: var(--ink-45); }
 .pricing__lock { width: 15px; height: 15px; stroke: var(--ink-45); flex-shrink: 0; }
 
 /* ==========================================================================
