@@ -1,14 +1,14 @@
 # Treats by Milz
 
 A single-page site selling one digital product — a downloadable baking
-course — with Ozow as the payment provider and Supabase handling orders
+course — with PayFast as the payment provider and Supabase handling orders
 and secure file delivery.
 
 ## What's here
 
 ```
 index.html              Main site (all 12 sections)
-checkout.html           Starts an order + redirects to Ozow
+checkout.html           Starts an order + redirects to PayFast
 success.html            Post-payment "you're in" screen + secure download
 error.html              Payment failed/cancelled screen
 
@@ -16,11 +16,11 @@ css/style.css            All styles
 js/site-config.js        Edit course name, price, modules, socials here
 js/main.js                Nav, accordion/card rendering, scroll reveals, magnetic buttons
 
-api/checkout/initiate.js  Creates a PENDING order, gets an Ozow payment URL
-api/checkout/webhook.js   Ozow's server-to-server confirmation — source of truth
+api/checkout/initiate.js  Creates a PENDING order, builds a signed PayFast payment URL
+api/checkout/webhook.js   PayFast's server-to-server confirmation (ITN) — source of truth
 api/download/verify.js    Issues a short-lived signed download URL, only if PAID
 
-lib/ozow.js                Ozow hash + API request helper
+lib/payfast.js              PayFast signing, ITN verification + validate-endpoint helper
 lib/supabase.js            Supabase server client
 ```
 
@@ -56,8 +56,7 @@ create table orders (
   product text not null,
   amount numeric(10,2) not null,
   status text not null default 'PENDING', -- PENDING, PAYMENT_INITIATED, PAID, FAILED, CANCELLED
-  ozow_payment_request_id text,
-  ozow_transaction_id text,
+  provider_transaction_id text, -- PayFast's pf_payment_id, set once the ITN arrives
   paid_at timestamptz,
   created_at timestamptz not null default now()
 );
@@ -68,6 +67,14 @@ alter table orders enable row level security;
 -- the browser with the anon key, which is what we want.
 ```
 
+If you already created this table for the previous Ozow integration, migrate
+it instead of dropping it:
+
+```sql
+alter table orders rename column ozow_transaction_id to provider_transaction_id;
+alter table orders drop column if exists ozow_payment_request_id;
+```
+
 3. Storage → create a **private** bucket called `course-files`.
 4. Upload the course ZIP there, matching `COURSE_ZIP_PATH` in
    `api/download/verify.js` (defaults to `treats-by-milz-course.zip`).
@@ -75,21 +82,28 @@ alter table orders enable row level security;
    thing that should ever generate a link to it, and only after checking
    `orders.status === 'PAID'`.
 
-## Ozow setup
+## PayFast setup
 
-1. Get `Site Code`, `Private Key` and `API Key` from your Ozow merchant
-   admin.
-2. Set all the vars in `.env.example` in Vercel (staging URL + test
-   keys first).
-3. **Before accepting real payments**, open `lib/ozow.js` and
-   `api/checkout/webhook.js` and check the field order in the `TODO`
-   comments against Ozow's current docs / Postman collection from your
-   merchant dashboard. Ozow's HashCheck is strict about field order and
-   does update occasionally — this scaffold reflects Ozow's commonly
-   published Direct API field order at the time of writing, not a live
-   API call, so it needs a real sandbox test before going live.
-4. Test the full loop in staging: `checkout.html` → Ozow staging bank
-   selection → `success.html` with a real signed download URL.
+1. Get your `Merchant ID` and `Merchant Key` from your PayFast merchant
+   dashboard, and set a **Passphrase** under Settings → Integration —
+   this integration requires one; without it, the ITN signature can be
+   reproduced by anyone who's seen a single real notification.
+2. Set all the vars in `.env.example` in Vercel — never paste real
+   credentials into a chat, commit, or anywhere outside Vercel's
+   Environment Variables screen. Use PayFast's sandbox credentials
+   (from their docs) and `PAYFAST_SANDBOX=true` first.
+3. **Before accepting real payments**, open `lib/payfast.js` and
+   `api/checkout/webhook.js` and check the field order/names in the
+   `TODO` comments against PayFast's current Custom Integration and ITN
+   docs. This scaffold reflects PayFast's commonly published field order
+   at the time of writing, not a live API call, so it needs a real
+   sandbox test before going live.
+4. Test the full loop in sandbox: `checkout.html` → PayFast sandbox
+   payment page → `success.html` with a real signed download URL. Also
+   trigger a cancellation to confirm `error.html` behaves — PayFast only
+   exposes a single `cancel_url` (no separate failure redirect), so both
+   a cancelled and a failed payment land there; the ITN-driven `status`
+   in Supabase is the accurate source of truth either way.
 
 ## Payment lifecycle
 
@@ -110,5 +124,5 @@ after 15 minutes.
 There's no local dev server here on purpose — same workflow as your
 other Vercel projects: push straight to GitHub, Vercel builds and
 deploys. For the `/api` routes specifically, you'll only be able to
-fully test end-to-end once real env vars are set in Vercel (Ozow
-staging keys + a real Supabase project), since they call out to both.
+fully test end-to-end once real env vars are set in Vercel (PayFast
+sandbox keys + a real Supabase project), since they call out to both.

@@ -31,7 +31,7 @@
     <div class="spinner" role="status" aria-label="Preparing your order"></div>
     <p class="state-card__eyebrow">Treats by Milz</p>
     <h1 class="state-card__heading">Setting up<br>your order.</h1>
-    <p class="state-card__body">You'll be taken to Ozow to complete a secure payment. Don't close this tab.</p>
+    <p class="state-card__body">You'll be taken to PayFast to complete a secure payment. Don't close this tab.</p>
   </div>
 
   <div class="state-card is-error" id="errorState">
@@ -49,14 +49,14 @@
   /**
    * Checkout flow:
    * 1. POST /api/checkout/initiate to create a PENDING order in Supabase
-   *    and get back an Ozow hosted-payment URL (HashCheck included server-side).
-   * 2. Redirect the browser to that Ozow URL.
-   * 3. Ozow redirects back to /success.html or /error.html after payment,
-   *    and separately calls /api/checkout/webhook to confirm server-side —
-   *    the webhook is the source of truth, never the redirect alone.
+   *    and get back a signed PayFast payment URL (built server-side).
+   * 2. Redirect the browser to that PayFast URL.
+   * 3. PayFast redirects back to /success.html or /error.html after payment,
+   *    and separately posts an ITN to /api/checkout/webhook to confirm
+   *    server-side — the webhook is the source of truth, never the redirect alone.
    *
-   * This page intentionally shows no payment form: Ozow's own hosted page
-   * collects banking details, this site never touches them.
+   * This page intentionally shows no payment form: PayFast's own hosted page
+   * collects banking/card details, this site never touches them.
    */
   (function () {
     var loading = document.getElementById("loadingState");

@@ -2,10 +2,10 @@
  * POST /api/checkout/initiate
  * ------------------------------------------------------------------
  * 1. Creates an order row with status PENDING in Supabase.
- * 2. Asks Ozow for a hosted payment URL for that order.
+ * 2. Builds a signed PayFast redirect URL for that order.
  * 3. Returns { paymentUrl } for the browser to redirect to.
  *
- * The frontend never sees pricing logic or Ozow credentials — it only
+ * The frontend never sees pricing logic or PayFast credentials — it only
  * gets back a URL. Amount is taken from COURSE_PRICE below, not from
  * whatever the client posted, so a tampered request body can't change
  * what gets charged.
@@ -13,7 +13,7 @@
  */
 
 const { getSupabase } = require("../../lib/supabase");
-const { createPaymentRequest } = require("../../lib/ozow");
+const { buildPaymentUrl } = require("../../lib/payfast");
 const crypto = require("crypto");
 
 // TODO keep this in sync with js/site-config.js course.price, or better,
@@ -44,19 +44,18 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ error: "Could not create order" });
     }
 
-    const { paymentUrl, paymentRequestId } = await createPaymentRequest({
-      transactionReference: orderRef,
-      bankReference: "TREATSBYMILZ",
+    const paymentUrl = buildPaymentUrl({
+      orderRef: orderRef,
       amount: COURSE_PRICE,
+      itemName: "Treats by Milz — Digital Baking Course",
       notifyUrl: SITE_URL + "/api/checkout/webhook",
-      successUrl: SITE_URL + "/success.html?order=" + orderRef,
-      errorUrl: SITE_URL + "/error.html?reason=failed&order=" + orderRef,
+      returnUrl: SITE_URL + "/success.html?order=" + orderRef,
       cancelUrl: SITE_URL + "/error.html?reason=cancelled&order=" + orderRef,
     });
 
     await supabase
       .from("orders")
-      .update({ ozow_payment_request_id: paymentRequestId, status: "PAYMENT_INITIATED" })
+      .update({ status: "PAYMENT_INITIATED" })
       .eq("reference", orderRef);
 
     return res.status(200).json({ paymentUrl: paymentUrl, order: orderRef });
