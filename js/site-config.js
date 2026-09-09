@@ -83,6 +83,5 @@ window.SITE_CONFIG = {
 
   links: {
     terms: "/terms.html",
-    privacy: "/privacy.html",
   },
 };
