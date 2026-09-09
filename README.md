@@ -65,6 +65,11 @@ alter table orders enable row level security;
 -- No policies added on purpose: the API routes use the service role key,
 -- which bypasses RLS. This means the table is NOT readable/writable from
 -- the browser with the anon key, which is what we want.
+
+-- RLS bypass and table grants are separate things — service_role still
+-- needs explicit privileges on this table, or every query 500s with
+-- "permission denied for table orders" (Postgres error 42501).
+grant select, insert, update on public.orders to service_role;
 ```
 
 If you already created this table for the previous Ozow integration, migrate
@@ -73,6 +78,7 @@ it instead of dropping it:
 ```sql
 alter table orders rename column ozow_transaction_id to provider_transaction_id;
 alter table orders drop column if exists ozow_payment_request_id;
+grant select, insert, update on public.orders to service_role;
 ```
 
 3. Storage → create a **private** bucket called `course-files`.
