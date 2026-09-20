@@ -19,11 +19,10 @@ window.SITE_CONFIG = {
     tagline: "Learn. Bake. Create.",
   },
 
-  // TEMP: price set to 5 for a real-money payment test — revert to 160 after testing
   course: {
     name: "The Digital Baking Course",
     currency: "R",
-    price: 5,
+    price: 160,
     priceNote: "Once-off payment. Instant access after payment.",
     zipFileName: "Get started with me_2026.zip",
   },
