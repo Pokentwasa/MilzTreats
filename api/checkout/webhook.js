@@ -24,6 +24,11 @@
 const { getSupabase } = require("../../lib/supabase");
 const { verifyItnSignature, validateWithPayfast } = require("../../lib/payfast");
 
+// Body parsing is turned off below so this handler sees PayFast's raw POST
+// bytes — verifyItnSignature()/validateWithPayfast() need the exact original
+// encoding, not a parsed-and-re-serialized object (see lib/payfast.js).
+module.exports.config = { api: { bodyParser: false } };
+
 // Map PayFast's payment_status values to our internal order status.
 // TODO confirm exact string values against PayFast's current ITN docs
 // (commonly: COMPLETE, FAILED, CANCELLED, PENDING)
@@ -34,17 +39,29 @@ const STATUS_MAP = {
   PENDING: "PENDING",
 };
 
+function readRawBody(req) {
+  return new Promise(function (resolve, reject) {
+    const chunks = [];
+    req.on("data", function (chunk) { chunks.push(chunk); });
+    req.on("end", function () { resolve(Buffer.concat(chunks).toString("utf8")); });
+    req.on("error", reject);
+  });
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).send("Method not allowed");
   }
 
-  const fields = req.body || {};
+  const rawBody = await readRawBody(req);
+  // Decoded fields are fine for business logic (order lookup, status,
+  // amount) — only signature verification needs the raw bytes.
+  const fields = Object.fromEntries(new URLSearchParams(rawBody));
 
   let validSignature = false;
   try {
-    validSignature = verifyItnSignature(fields);
+    validSignature = verifyItnSignature(rawBody, fields.signature);
   } catch (err) {
     console.error("[checkout/webhook] signature verification threw:", err);
   }
@@ -57,7 +74,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const confirmed = await validateWithPayfast(fields);
+    const confirmed = await validateWithPayfast(rawBody);
     if (!confirmed) {
       console.warn("[checkout/webhook] PayFast validate endpoint rejected notification", fields.m_payment_id);
       return res.status(200).send("ignored");
