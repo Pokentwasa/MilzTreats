@@ -16,7 +16,7 @@
 const { getSupabase } = require("../../lib/supabase");
 
 const BUCKET = "course-files";
-const COURSE_ZIP_PATH = "treats-by-milz-course.zip"; // TODO must match the uploaded file path
+const COURSE_ZIP_PATH = "Get started with me_2026.zip"; // must match the uploaded file path exactly
 const SIGNED_URL_TTL_SECONDS = 60 * 15; // 15 minutes
 
 module.exports = async function handler(req, res) {

@@ -20,12 +20,104 @@
   @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
   .state-card.is-error { display: none; }
   .state-card.is-error.is-active { display: block; }
-  .state-card.is-loading.is-hidden { display: none; }
+  .state-card.is-loading { display: none; }
+  .state-card.is-loading.is-active { display: block; }
+
+  /* ---------- customer info form ---------- */
+  .form-card { max-width: 520px; text-align: left; display: none; }
+  .form-card.is-active { display: block; }
+  .form-card__eyebrow { font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--pink-deep); margin-bottom: 1rem; text-align: center; }
+  .form-card__heading { font-family: var(--font-display); font-weight: 500; font-size: clamp(2rem, 5vw, 2.6rem); line-height: 1.1; margin-bottom: 1.1rem; color: var(--ink); text-align: center; }
+  .form-card__intro { color: var(--body-ink); line-height: 1.7; margin-bottom: 2.25rem; text-align: center; }
+
+  .form-field { margin-bottom: 1.5rem; }
+  .form-field label {
+    display: block; font-family: var(--font-body); font-weight: 600; font-size: 0.92rem;
+    color: var(--ink); margin-bottom: 0.6rem;
+  }
+  .form-field select,
+  .form-field input[type="text"] {
+    width: 100%; font: inherit; font-family: var(--font-body); font-size: 1rem; color: var(--ink);
+    background: var(--white); border: 1.5px solid rgba(42,33,30,0.16); border-radius: var(--radius-sm);
+    padding: 0.9em 1.1em; transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+    appearance: none;
+  }
+  .form-field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2355483F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 1.1em center; background-size: 1.05em;
+    padding-right: 2.75em;
+  }
+  .form-field select:focus,
+  .form-field input[type="text"]:focus {
+    outline: none; border-color: var(--pink-deep); box-shadow: 0 0 0 4px var(--pink-tint);
+  }
+  .form-field.is-conditional { display: none; }
+  .form-field.is-conditional.is-active { display: block; }
+  .form-field__hint { font-size: 0.85rem; color: var(--ink-45); margin-top: 0.5rem; }
+
+  .form-card__submit { margin-top: 0.75rem; }
 </style>
 </head>
 <body>
 
 <div class="state-page">
+
+  <div class="form-card is-active" id="formState">
+    <p class="form-card__eyebrow">Treats by Milz</p>
+    <h1 class="form-card__heading">A little about you</h1>
+    <p class="form-card__intro">
+      We&rsquo;re building more than just a baking course. Your answers help us understand
+      what you&rsquo;re working towards and where you&rsquo;re based, so we can create better
+      support for our baking community — from helping you find suppliers in your area to
+      sharing useful business resources, tips and opportunities. It&rsquo;ll only take a few
+      seconds.
+    </p>
+
+    <form id="customerForm" novalidate>
+      <div class="form-field">
+        <label for="goalInput">What brings you to the course?</label>
+        <select id="goalInput" name="goal" required>
+          <option value="" disabled selected>Select an option</option>
+          <option value="Baking as a hobby">Baking as a hobby</option>
+          <option value="I want to start a baking business">I want to start a baking business</option>
+          <option value="I already have a baking business">I already have a baking business</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-field is-conditional" id="goalOtherField">
+        <label for="goalOtherInput">Tell us more</label>
+        <input type="text" id="goalOtherInput" name="goalOther" maxlength="200">
+      </div>
+
+      <div class="form-field">
+        <label for="provinceInput">Where are you based?</label>
+        <select id="provinceInput" name="province" required>
+          <option value="" disabled selected>Select a province</option>
+          <option value="Eastern Cape">Eastern Cape</option>
+          <option value="Free State">Free State</option>
+          <option value="Gauteng">Gauteng</option>
+          <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+          <option value="Limpopo">Limpopo</option>
+          <option value="Mpumalanga">Mpumalanga</option>
+          <option value="North West">North West</option>
+          <option value="Northern Cape">Northern Cape</option>
+          <option value="Western Cape">Western Cape</option>
+          <option value="Outside South Africa">Outside South Africa</option>
+        </select>
+      </div>
+
+      <div class="form-field is-conditional" id="countryField">
+        <label for="countryInput">Which country are you based in?</label>
+        <input type="text" id="countryInput" name="country" maxlength="100">
+      </div>
+
+      <button type="submit" class="btn btn--primary btn--full form-card__submit" id="continueBtn">
+        <span>Continue to Secure Payment</span>
+        <svg viewBox="0 0 24 24" class="btn__arrow"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </form>
+  </div>
 
   <div class="state-card is-loading" id="loadingState">
     <div class="spinner" role="status" aria-label="Preparing your order"></div>
@@ -48,10 +140,13 @@
 <script>
   /**
    * Checkout flow:
-   * 1. POST /api/checkout/initiate to create a PENDING order in Supabase
-   *    and get back a signed PayFast payment URL (built server-side).
-   * 2. Redirect the browser to that PayFast URL.
-   * 3. PayFast redirects back to /success.html or /error.html after payment,
+   * 1. Customer fills in a short "about you" form on this page.
+   * 2. On submit, POST /api/checkout/initiate to save that info alongside a
+   *    new PENDING order in Supabase and get back a signed PayFast payment URL
+   *    (built server-side) — this is the same existing PayFast integration,
+   *    just given a couple of extra fields to store.
+   * 3. Redirect the browser to that PayFast URL.
+   * 4. PayFast redirects back to /success.html or /error.html after payment,
    *    and separately posts an ITN to /api/checkout/webhook to confirm
    *    server-side — the webhook is the source of truth, never the redirect alone.
    *
@@ -59,13 +154,54 @@
    * collects banking/card details, this site never touches them.
    */
   (function () {
+    var formState = document.getElementById("formState");
     var loading = document.getElementById("loadingState");
     var errorState = document.getElementById("errorState");
     var retryBtn = document.getElementById("retryBtn");
+    var form = document.getElementById("customerForm");
 
-    function startCheckout() {
-      loading.classList.remove("is-hidden");
+    var goalInput = document.getElementById("goalInput");
+    var goalOtherField = document.getElementById("goalOtherField");
+    var goalOtherInput = document.getElementById("goalOtherInput");
+    var provinceInput = document.getElementById("provinceInput");
+    var countryField = document.getElementById("countryField");
+    var countryInput = document.getElementById("countryInput");
+
+    var lastAnswers = null;
+
+    function syncConditionalField(select, field, input, triggerValue) {
+      var show = select.value === triggerValue;
+      field.classList.toggle("is-active", show);
+      input.required = show;
+      if (!show) input.value = "";
+    }
+
+    goalInput.addEventListener("change", function () {
+      syncConditionalField(goalInput, goalOtherField, goalOtherInput, "Other");
+    });
+    provinceInput.addEventListener("change", function () {
+      syncConditionalField(provinceInput, countryField, countryInput, "Outside South Africa");
+    });
+
+    function showForm() {
+      formState.classList.add("is-active");
+      loading.classList.remove("is-active");
       errorState.classList.remove("is-active");
+    }
+
+    function showLoading() {
+      formState.classList.remove("is-active");
+      loading.classList.add("is-active");
+      errorState.classList.remove("is-active");
+    }
+
+    function showError() {
+      loading.classList.remove("is-active");
+      errorState.classList.add("is-active");
+    }
+
+    function startCheckout(answers) {
+      showLoading();
 
       var course = (window.SITE_CONFIG && window.SITE_CONFIG.course) || {};
 
@@ -75,6 +211,10 @@
         body: JSON.stringify({
           product: "digital-baking-course",
           amount: course.price,
+          customerGoal: answers.goal,
+          customerGoalOther: answers.goalOther,
+          province: answers.province,
+          country: answers.country,
         }),
       })
         .then(function (res) {
@@ -86,14 +226,34 @@
           window.location.href = data.paymentUrl;
         })
         .catch(function (err) {
-          loading.classList.add("is-hidden");
-          errorState.classList.add("is-active");
+          showError();
           console.error("[checkout] initiate failed:", err);
         });
     }
 
-    retryBtn.addEventListener("click", startCheckout);
-    startCheckout();
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!form.reportValidity()) return;
+
+      lastAnswers = {
+        goal: goalInput.value,
+        goalOther: goalInput.value === "Other" ? goalOtherInput.value.trim() : "",
+        province: provinceInput.value,
+        country: provinceInput.value === "Outside South Africa" ? countryInput.value.trim() : "",
+      };
+
+      startCheckout(lastAnswers);
+    });
+
+    retryBtn.addEventListener("click", function () {
+      if (lastAnswers) {
+        startCheckout(lastAnswers);
+      } else {
+        showForm();
+      }
+    });
+
+    showForm();
   })();
 </script>
 </body>

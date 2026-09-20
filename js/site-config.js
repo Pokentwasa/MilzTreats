@@ -25,7 +25,7 @@ window.SITE_CONFIG = {
     currency: "R",
     price: 160,
     priceNote: "Once-off payment. Instant access after payment.",
-    zipFileName: "treats-by-milz-course.zip",
+    zipFileName: "Get started with me_2026.zip",
   },
 
   // TODO: replace with real course modules from Milz
