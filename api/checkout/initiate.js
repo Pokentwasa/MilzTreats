@@ -20,9 +20,10 @@ const { getSupabase } = require("../../lib/supabase");
 const { buildPaymentUrl } = require("../../lib/payfast");
 const crypto = require("crypto");
 
+// TEMP: price dropped to R5 for a live payment test — restore to 160.0 after.
 // TODO keep this in sync with js/site-config.js course.price, or better,
 // move both to read from a single shared source (e.g. a Supabase `products` row)
-const COURSE_PRICE = 160.0;
+const COURSE_PRICE = 5.0;
 const SITE_URL = process.env.SITE_URL || "https://treatsbymilz.co.za";
 
 // Must match the <option> values in checkout.html's customer info form.
