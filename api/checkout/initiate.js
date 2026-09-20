@@ -1,9 +1,13 @@
 /**
  * POST /api/checkout/initiate
  * ------------------------------------------------------------------
- * 1. Creates an order row with status PENDING in Supabase.
- * 2. Builds a signed PayFast redirect URL for that order.
- * 3. Returns { paymentUrl } for the browser to redirect to.
+ * 1. Validates the short "about you" questionnaire answers.
+ * 2. Creates an order row with status PENDING in Supabase, including
+ *    those answers, so they're saved before the customer ever leaves
+ *    for PayFast — no payment happens without this row existing first.
+ * 3. Builds a signed PayFast redirect URL for that order (unchanged
+ *    from the existing PayFast integration).
+ * 4. Returns { paymentUrl } for the browser to redirect to.
  *
  * The frontend never sees pricing logic or PayFast credentials — it only
  * gets back a URL. Amount is taken from COURSE_PRICE below, not from
@@ -21,10 +25,64 @@ const crypto = require("crypto");
 const COURSE_PRICE = 160.0;
 const SITE_URL = process.env.SITE_URL || "https://treatsbymilz.co.za";
 
+// Must match the <option> values in checkout.html's customer info form.
+const GOAL_OPTIONS = [
+  "Baking as a hobby",
+  "I want to start a baking business",
+  "I already have a baking business",
+  "Other",
+];
+const PROVINCE_OPTIONS = [
+  "Eastern Cape",
+  "Free State",
+  "Gauteng",
+  "KwaZulu-Natal",
+  "Limpopo",
+  "Mpumalanga",
+  "North West",
+  "Northern Cape",
+  "Western Cape",
+  "Outside South Africa",
+];
+
+function validateCustomerInfo(body) {
+  const goal = typeof body.customerGoal === "string" ? body.customerGoal.trim() : "";
+  const province = typeof body.province === "string" ? body.province.trim() : "";
+
+  if (!GOAL_OPTIONS.includes(goal)) {
+    return { error: "Missing or invalid customerGoal" };
+  }
+  if (!PROVINCE_OPTIONS.includes(province)) {
+    return { error: "Missing or invalid province" };
+  }
+
+  let goalOther = "";
+  if (goal === "Other") {
+    goalOther = typeof body.customerGoalOther === "string" ? body.customerGoalOther.trim() : "";
+    if (!goalOther) return { error: "customerGoalOther is required when customerGoal is Other" };
+    goalOther = goalOther.slice(0, 200);
+  }
+
+  let country = "";
+  if (province === "Outside South Africa") {
+    country = typeof body.country === "string" ? body.country.trim() : "";
+    if (!country) return { error: "country is required when province is Outside South Africa" };
+    country = country.slice(0, 100);
+  }
+
+  return { value: { goal, goalOther, province, country } };
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const body = req.body || {};
+  const { value: customerInfo, error: customerInfoError } = validateCustomerInfo(body);
+  if (customerInfoError) {
+    return res.status(400).json({ error: customerInfoError });
   }
 
   try {
@@ -37,6 +95,10 @@ module.exports = async function handler(req, res) {
       product: "digital-baking-course",
       amount: COURSE_PRICE,
       status: "PENDING",
+      customer_goal: customerInfo.goal,
+      customer_goal_other: customerInfo.goalOther || null,
+      province: customerInfo.province,
+      country: customerInfo.country || null,
     });
 
     if (insertError) {

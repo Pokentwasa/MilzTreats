@@ -44,6 +44,15 @@ layout, aspect ratios and spacing are already sized for this.
 these two numbers in sync, or move the price into a `products` table in
 Supabase and have both read from there.
 
+**`checkout.html`** shows a short "about you" form (what brings you to
+the course, which province/country) before starting the PayFast order —
+run the schema migration in the Supabase setup section below before
+this goes live, or every checkout will 500 on the missing columns. The
+dropdown options are hardcoded in both `checkout.html` and
+`api/checkout/initiate.js` (`GOAL_OPTIONS`/`PROVINCE_OPTIONS`) — the
+server re-validates against the same list, so if you add/rename an
+option, update both files together.
+
 ## Supabase setup
 
 1. Create a project at supabase.com.
@@ -57,6 +66,10 @@ create table orders (
   amount numeric(10,2) not null,
   status text not null default 'PENDING', -- PENDING, PAYMENT_INITIATED, PAID, FAILED, CANCELLED
   provider_transaction_id text, -- PayFast's pf_payment_id, set once the ITN arrives
+  customer_goal text, -- checkout.html "about you" form — see api/checkout/initiate.js GOAL_OPTIONS
+  customer_goal_other text, -- only set when customer_goal = 'Other'
+  province text, -- see api/checkout/initiate.js PROVINCE_OPTIONS
+  country text, -- only set when province = 'Outside South Africa'
   paid_at timestamptz,
   created_at timestamptz not null default now()
 );
@@ -79,6 +92,17 @@ it instead of dropping it:
 alter table orders rename column ozow_transaction_id to provider_transaction_id;
 alter table orders drop column if exists ozow_payment_request_id;
 grant select, insert, update on public.orders to service_role;
+```
+
+If your `orders` table already existed before the checkout "about you" form
+was added, run this once to add the new columns instead of recreating the
+table:
+
+```sql
+alter table orders add column if not exists customer_goal text;
+alter table orders add column if not exists customer_goal_other text;
+alter table orders add column if not exists province text;
+alter table orders add column if not exists country text;
 ```
 
 3. Storage → create a **private** bucket called `course-files`.
