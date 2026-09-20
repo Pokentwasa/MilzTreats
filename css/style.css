@@ -470,9 +470,23 @@ button { font: inherit; background: none; border: none; cursor: pointer; color: 
   .intro__grid, .milz__grid, .included__grid { grid-template-columns: 1fr; }
   .milz__image, .included__image { order: -1; aspect-ratio: 16/10; }
 
-  .hero__grid { grid-template-columns: 1fr; }
-  .hero__image { order: -1; aspect-ratio: 4/3; min-height: 320px; }
-  .hero__panel { text-align: center; align-items: center; }
+  .hero__grid {
+    grid-template-columns: 1fr; grid-template-rows: 1fr;
+    min-height: 92vh;
+  }
+  .hero__image, .hero__panel { grid-area: 1 / 1; }
+  .hero__image { position: relative; min-height: 100%; }
+  .hero__image::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(253,243,236,0.62) 0%, rgba(253,243,236,0.58) 50%, rgba(255,255,255,0.95) 96%);
+  }
+  .hero__panel {
+    position: relative; z-index: 1;
+    background: transparent;
+    align-self: flex-end;
+    text-align: center; align-items: center;
+    padding-bottom: clamp(4rem, 8vw, 6rem);
+  }
   .hero__sub, .hero__body { margin-left: auto; margin-right: auto; }
   .hero__ctas { align-items: center; }
 
@@ -488,5 +502,5 @@ button { font: inherit; background: none; border: none; cursor: pointer; color: 
   .journey-item__title { font-size: 1.05rem; }
   .journey-item__body { padding-left: 2.25rem; }
   .showcase__item { flex-basis: 74vw; }
-  .hero { min-height: 84vh; }
+  .hero, .hero__grid { min-height: 84vh; }
 }
