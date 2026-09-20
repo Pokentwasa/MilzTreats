@@ -107,7 +107,7 @@ alter table orders add column if not exists country text;
 
 3. Storage → create a **private** bucket called `course-files`.
 4. Upload the course ZIP there, matching `COURSE_ZIP_PATH` in
-   `api/download/verify.js` (defaults to `treats-by-milz-course.zip`).
+   `api/download/verify.js` (currently `Get started with me_2026.zip`).
    Do not make the bucket public — `api/download/verify.js` is the only
    thing that should ever generate a link to it, and only after checking
    `orders.status === 'PAID'`.
