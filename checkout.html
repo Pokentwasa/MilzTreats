@@ -56,6 +56,12 @@
   .form-field__hint { font-size: 0.85rem; color: var(--ink-45); margin-top: 0.5rem; }
 
   .form-card__submit { margin-top: 0.75rem; }
+
+  /* ---------- in-app browser notice ---------- */
+  .inapp-notice { display: none; background: var(--pink-tint); border-radius: var(--radius-sm); padding: 1rem 1.15rem; margin-bottom: 1.75rem; font-size: 0.92rem; line-height: 1.55; color: var(--ink); }
+  .inapp-notice.is-active { display: block; }
+  .inapp-notice strong { display: block; margin-bottom: 0.35rem; }
+  .inapp-notice button { margin-top: 0.75rem; font: inherit; font-weight: 600; font-size: 0.88rem; color: var(--pink-deep); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -72,6 +78,14 @@
       sharing useful business resources, tips and opportunities. It&rsquo;ll only take a few
       seconds.
     </p>
+
+    <div class="inapp-notice" id="inAppNotice" role="note">
+      <strong>Open this page in your browser first</strong>
+      You&rsquo;re viewing this inside another app (like Instagram, Facebook or TikTok),
+      and payment pages often get stuck loading in there. Tap the &hellip; or share menu
+      and choose &ldquo;Open in browser&rdquo; (Chrome or Safari), then continue.
+      <br><button type="button" id="copyLinkBtn">Copy link to this page</button>
+    </div>
 
     <form id="customerForm" novalidate>
       <div class="form-field">
@@ -205,8 +219,14 @@
 
       var course = (window.SITE_CONFIG && window.SITE_CONFIG.course) || {};
 
+      // Don't let a hung request leave the spinner up forever — fall through
+      // to the error state (with a Try Again button) instead.
+      var controller = window.AbortController ? new AbortController() : null;
+      var timeoutId = controller ? setTimeout(function () { controller.abort(); }, 20000) : null;
+
       fetch("/api/checkout/initiate", {
         method: "POST",
+        signal: controller ? controller.signal : undefined,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           product: "digital-baking-course",
@@ -218,6 +238,7 @@
         }),
       })
         .then(function (res) {
+          clearTimeout(timeoutId);
           if (!res.ok) throw new Error("Order could not be created (" + res.status + ")");
           return res.json();
         })
@@ -226,6 +247,7 @@
           window.location.href = data.paymentUrl;
         })
         .catch(function (err) {
+          clearTimeout(timeoutId);
           showError();
           console.error("[checkout] initiate failed:", err);
         });
@@ -252,6 +274,32 @@
         showForm();
       }
     });
+
+    // Pressing Back from PayFast can restore this page from the browser's
+    // back/forward cache exactly as it was left — i.e. still showing the
+    // "Setting up your order" spinner, with nothing running behind it.
+    // Reset to the form so the customer can start again.
+    window.addEventListener("pageshow", function (e) {
+      if (e.persisted) showForm();
+    });
+
+    // Social apps' built-in browsers often hang on PayFast's payment-method
+    // step (blocked pop-ups/3-D Secure frames/cookies). Ask those visitors to
+    // open the page in a real browser before paying.
+    var ua = navigator.userAgent || "";
+    if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|TikTok|musical_ly|BytedanceWebview|Snapchat|Pinterest|LinkedInApp|Line\//i.test(ua)) {
+      document.getElementById("inAppNotice").classList.add("is-active");
+      var copyBtn = document.getElementById("copyLinkBtn");
+      copyBtn.addEventListener("click", function () {
+        var url = window.location.origin + "/checkout.html";
+        var done = function () { copyBtn.textContent = "Link copied — paste it into Chrome or Safari"; };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done, function () { window.prompt("Copy this link:", url); });
+        } else {
+          window.prompt("Copy this link:", url);
+        }
+      });
+    }
 
     showForm();
   })();
